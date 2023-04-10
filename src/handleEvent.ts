@@ -35,7 +35,7 @@ async function createChannel({ guild, threadID, cate, client }: CreateChannelOpt
         const channel = await guild?.channels.create({
             name: threadID,
             type: ChannelType.GuildText,
-            parent: cate?.id,
+            parent: cate.id,
             permissionOverwrites: [
                 {
                     id: process.env.ADMINID!,
@@ -88,6 +88,21 @@ export default async function handleEvent({ dc_client, fb_client }: HandleEventO
 
             fb_client.getApi()?.sendMessage(option as unknown as string, channel.threadID).catch(e => console.error(e))
         } catch (e) {
+            console.error(e)
+        }
+    })
+
+    dc_client.on("channelDelete", async (channel) => {
+        try {
+            await Promise.all([
+                ChannelMap.destroy({
+                    where: {
+                        channelID: channel.id
+                    }
+                })
+            ])
+            data = await ChannelMap.findAll();
+        } catch(e) {
             console.error(e)
         }
     })
